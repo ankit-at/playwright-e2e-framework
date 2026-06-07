@@ -1,0 +1,20 @@
+# Artillery browser load test — drives the REAL Playwright login flow at scale.
+# Run from project root:  npx artillery run artillery/login-browser.yml
+config:
+  target: https://rahulshettyacademy.com/client
+  # Use the bundled Playwright engine (real Chromium per virtual user).
+  engines:
+    playwright:
+      launchOptions:
+        headless: true
+  processor: "./flows.js"
+  # Browser VUs are heavy — keep arrival low. Scale up gradually.
+  phases:
+    - duration: 15
+      arrivalRate: 1
+      name: "Ramp real-browser users"
+
+scenarios:
+  - name: "Login flow (real browser)"
+    engine: playwright
+    testFunction: "loginFlow"

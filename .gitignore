@@ -1,0 +1,27 @@
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+/results/
+/tools/
+/jsPractice/
+.claude/
+/allure-report/
+/allure-results/
+state.json
+results/junit.xml
+.npm-cache
+
+# Secrets — local credentials live here, never commit them (.env.example is the template)
+.env
+.env.*
+!.env.example
+.vscode/
+.prettier*
+
+# macOS
+.DS_Store

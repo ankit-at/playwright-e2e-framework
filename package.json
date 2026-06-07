@@ -1,0 +1,36 @@
+{
+  "name": "playwright",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc -p jsconfig.json --noEmit",
+    "test": "npx playwright test",
+    "test:smoke": "npx playwright test tests/webAPI.spec.js tests/bookingAuth.spec.js",
+    "perf": "npx playwright test tests/performance.spec.js --reporter=line",
+    "load:browser": "artillery run artillery/login-browser.yml",
+    "load:k6": "./tools/k6 run k6/login-api.js",
+    "load:k6-browser": "K6_BROWSER_HEADLESS=true K6_BROWSER_EXECUTABLE_PATH=\"$HOME/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing\" ./tools/k6 run k6/login-browser.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "allure-commandline": "^2.42.0",
+    "allure-playwright": "^3.9.0",
+    "artillery": "^2.0.32",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}

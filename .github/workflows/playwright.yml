@@ -1,0 +1,95 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # manual trigger from GitHub UI
+  schedule:
+    - cron: "0 2 * * *" # nightly at 02:00 UTC
+
+# Opt JS actions (checkout/setup-node/upload-artifact) into Node 24 now, clearing the
+# "Node.js 20 actions are deprecated" warning. Becomes a no-op once Node 24 is the
+# runner default (2026-06-16). See https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run tests
+        run: npx playwright test
+        env:
+          CI: true
+          # Credentials — set in GitHub → Settings → Secrets and variables → Actions.
+          # rahulshettyacademy account (client/events/angular/k6)
+          RSA_EMAIL: ${{ secrets.RSA_EMAIL }}
+          RSA_PASSWORD: ${{ secrets.RSA_PASSWORD }}
+          # ProtoCommerce loginpagePractise account
+          PROTO_USER: ${{ secrets.PROTO_USER }}
+          PROTO_PASS: ${{ secrets.PROTO_PASS }}
+          # EventHub booking personas
+          YAHOO_EMAIL: ${{ secrets.YAHOO_EMAIL }}
+          YAHOO_PASSWORD: ${{ secrets.YAHOO_PASSWORD }}
+          GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload traces & screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+
+  load-tests: # perf/load only on schedule or manual — never blocks a PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run performance tests
+        run: npx playwright test tests/performance.spec.js --reporter=line
+        env:
+          CI: true
+          RSA_EMAIL: ${{ secrets.RSA_EMAIL }}
+          RSA_PASSWORD: ${{ secrets.RSA_PASSWORD }}

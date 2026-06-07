@@ -1,0 +1,39 @@
+{
+  // Drives VS Code IntelliSense + type-checking for the JavaScript test suite.
+  // No build step — VS Code's bundled TypeScript reads this to resolve types for
+  // @playwright/test (page, expect, locators), Node globals, and imported JSON.
+  "compilerOptions": {
+    "module": "node16",
+    "target": "ES2022",
+    // DOM libs type the browser globals used inside page.evaluate() callbacks
+    // (document, window, performance, PerformanceObserver, ...).
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "node16",
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "tests/**/*.js",
+    "pages/**/*.js",
+    "fixtures/**/*.js",
+    "config/**/*.js",
+    "api/**/*.js",
+    "mocks/**/*.js",
+    "utils/**/*.js",
+    "playwright.config.js",
+    "eslint.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "allure-report",
+    "allure-results",
+    "results",
+    "playwright-report",
+    "test-results",
+    "k6",
+    "jsPractice"
+  ]
+}

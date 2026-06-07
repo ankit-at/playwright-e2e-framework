@@ -1,0 +1,14 @@
+{
+  "yahoo": {
+    "email": "",
+    "password": "",
+    "name": "Yahoo User",
+    "phone": "9876500011"
+  },
+  "gmail": {
+    "email": "",
+    "password": "",
+    "name": "Gmail User",
+    "phone": "9876500022"
+  }
+}
