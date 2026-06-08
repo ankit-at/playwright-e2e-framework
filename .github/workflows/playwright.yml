@@ -9,12 +9,6 @@ on:
   schedule:
     - cron: "0 2 * * *" # nightly at 02:00 UTC
 
-# Opt JS actions (checkout/setup-node/upload-artifact) into Node 24 now, clearing the
-# "Node.js 20 actions are deprecated" warning. Becomes a no-op once Node 24 is the
-# runner default (2026-06-16). See https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 # Least-privilege GITHUB_TOKEN: this workflow only reads code and runs tests — it
 # never writes to the repo. Caps the blast radius if any step/dependency is compromised.
 permissions:
@@ -26,12 +20,12 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: Install dependencies
@@ -64,7 +58,7 @@ jobs:
       # To debug a failure with traces, run locally (npx playwright show-trace) or make
       # the repo private and re-enable a failure-artifact upload.
       - name: Upload HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: success()
         with:
           name: playwright-report
@@ -76,12 +70,12 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: Install dependencies
