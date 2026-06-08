@@ -42,8 +42,13 @@ module.exports = defineConfig({
     testIdAttribute: "data-testid",
     navigationTimeout: 60000, // rahulshettyacademy.com can be slow on CI runners
     headless: true,
-    screenshot: "only-on-failure",
-    trace: "on-first-retry",
+    // Traces/screenshots capture login request bodies, bearer tokens and filled-in
+    // password fields. This repo is PUBLIC and its CI artifacts are downloadable by
+    // anyone, so we never generate them on CI (even a flaky-then-passed test would
+    // otherwise embed a trace into the uploaded report). Locally they stay on for
+    // debugging. To debug a CI failure, reproduce locally or make the repo private.
+    screenshot: process.env.CI ? "off" : "only-on-failure",
+    trace: process.env.CI ? "off" : "on-first-retry",
   },
 
   // Single Chromium project. The apps under test are third-party live sites, so we
