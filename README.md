@@ -1,4 +1,7 @@
 Playwright Practice Suite
+
+[![Playwright Tests](https://github.com/ankit-at/playwright-e2e-framework/actions/workflows/playwright.yml/badge.svg)](https://github.com/ankit-at/playwright-e2e-framework/actions/workflows/playwright.yml)
+
 A comprehensive end-to-end test automation framework built with Playwright, covering UI, API, and Performance testing — with full CI/CD integration via GitHub Actions and Jenkins.
 
 📋 Table of Contents

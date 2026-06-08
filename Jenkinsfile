@@ -10,17 +10,10 @@ pipeline {
     }
 
     environment {
-        // Credentials — add each as a "Secret text" entry in Jenkins
-        // (Manage Jenkins → Credentials) using the matching ID below.
-        CI             = 'true'
-        RSA_EMAIL      = credentials('RSA_EMAIL')
-        RSA_PASSWORD   = credentials('RSA_PASSWORD')
-        PROTO_USER     = credentials('PROTO_USER')
-        PROTO_PASS     = credentials('PROTO_PASS')
-        YAHOO_EMAIL    = credentials('YAHOO_EMAIL')
-        YAHOO_PASSWORD = credentials('YAHOO_PASSWORD')
-        GMAIL_EMAIL    = credentials('GMAIL_EMAIL')
-        GMAIL_PASSWORD = credentials('GMAIL_PASSWORD')
+        // Only non-secret config is pipeline-wide. Credentials are bound at the stage
+        // level (Test / Performance) so the Checkout and Install stages — including
+        // `npm ci`, which runs third-party install scripts — never see them.
+        CI = 'true'
     }
 
     stages {
@@ -41,6 +34,17 @@ pipeline {
         }
 
         stage('Test') {
+            // Credentials scoped to just this stage (Jenkins masks them in logs).
+            environment {
+                RSA_EMAIL      = credentials('RSA_EMAIL')
+                RSA_PASSWORD   = credentials('RSA_PASSWORD')
+                PROTO_USER     = credentials('PROTO_USER')
+                PROTO_PASS     = credentials('PROTO_PASS')
+                YAHOO_EMAIL    = credentials('YAHOO_EMAIL')
+                YAHOO_PASSWORD = credentials('YAHOO_PASSWORD')
+                GMAIL_EMAIL    = credentials('GMAIL_EMAIL')
+                GMAIL_PASSWORD = credentials('GMAIL_PASSWORD')
+            }
             steps {
                 sh 'npm test'
             }
@@ -52,6 +56,11 @@ pipeline {
                     triggeredBy 'TimerTrigger'   // nightly cron
                     triggeredBy 'UserIdCause'    // manual run
                 }
+            }
+            // The perf benchmark only drives the /client login → scope to RSA creds.
+            environment {
+                RSA_EMAIL    = credentials('RSA_EMAIL')
+                RSA_PASSWORD = credentials('RSA_PASSWORD')
             }
             steps {
                 sh 'npx playwright test tests/performance.spec.js --reporter=line'
