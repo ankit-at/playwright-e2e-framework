@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'Node20'
+        // Requires a NodeJS tool named 'Node24' under Manage Jenkins -> Tools.
+        nodejs 'Node24'
     }
 
     triggers {
