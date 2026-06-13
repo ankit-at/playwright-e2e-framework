@@ -9,6 +9,12 @@ on:
   schedule:
     - cron: "0 2 * * *" # nightly at 02:00 UTC
 
+# Silence the transitive punycode deprecation (DEP0040) emitted by deps like
+# whatwg-url/tr46 on Node 24. Set workflow-wide so it also covers the setup-node
+# post-step (cache save), where the warning surfaces — not just the test run.
+env:
+  NODE_OPTIONS: --disable-warning=DEP0040
+
 # Least-privilege GITHUB_TOKEN: this workflow only reads code and runs tests — it
 # never writes to the repo. Caps the blast radius if any step/dependency is compromised.
 permissions:
