@@ -3,8 +3,7 @@ import { EventHubPage } from "./eventhub.page";
 export type CustomerDetails = { name?: string; email?: string; phone?: string };
 
 /**
- * BookingPage — the booking form shown after "Book Now", plus the confirmation
- * that replaces it on success.
+ * BookingPage — the booking form shown after "Book Now", plus the confirmation.
  */
 export class BookingPage extends EventHubPage {
   readonly ticketCount = this.page.locator("#ticket-count");
@@ -13,20 +12,17 @@ export class BookingPage extends EventHubPage {
   readonly emailInput = this.page.locator("#customer-email");
   readonly phoneInput = this.page.getByPlaceholder("+91 98765 43210");
   readonly confirmButton = this.page.locator(".confirm-booking-btn");
-  // Confirmation surface
   readonly bookingRef = this.page.locator(".booking-ref").first();
   readonly confirmationHeading = this.page.locator("h3.mb-1", { hasText: /Booking Confirmed/i });
   readonly viewMyBookingsLink = this.page.getByRole("link", { name: "View My Bookings" });
 
-  /** Wait for the booking form to be interactive (ticket counter rendered). */
   async waitUntilReady(): Promise<void> {
-    await this.ticketCount.waitFor();
+    await this.actions.waitFor(this.ticketCount);
   }
 
-  /** Bump the ticket quantity by clicking "+" `times` times (0 = single ticket). */
   async addTickets(times: number): Promise<void> {
     for (let i = 0; i < times; i++) {
-      await this.incrementButton.click();
+      await this.actions.click(this.incrementButton);
     }
   }
 
@@ -35,22 +31,20 @@ export class BookingPage extends EventHubPage {
     email = "test.student@example.com",
     phone = "+91 98765 43210",
   }: CustomerDetails = {}): Promise<void> {
-    await this.fullNameInput.fill(name);
-    await this.emailInput.fill(email);
-    await this.phoneInput.fill(phone);
+    await this.actions.fill(this.fullNameInput, name);
+    await this.actions.fill(this.emailInput, email);
+    await this.actions.fill(this.phoneInput, phone);
   }
 
   async confirm(): Promise<void> {
-    await this.confirmButton.first().click();
+    await this.actions.click(this.confirmButton.first());
   }
 
-  /** The trimmed booking reference from the confirmation. */
   async getBookingRef(): Promise<string> {
-    return (await this.bookingRef.innerText()).trim();
+    return this.actions.getText(this.bookingRef);
   }
 
-  /** Navigate from the confirmation to the My Bookings page. */
   async viewMyBookings(): Promise<void> {
-    await this.viewMyBookingsLink.click();
+    await this.actions.click(this.viewMyBookingsLink);
   }
 }
