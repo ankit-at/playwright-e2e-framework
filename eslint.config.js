@@ -1,11 +1,13 @@
 const js = require("@eslint/js");
+const tseslint = require("typescript-eslint");
 const globals = require("globals");
 
-module.exports = [
+module.exports = tseslint.config(
   {
-    // Generated reports, build output, caches and skill assets — not source.
+    // Generated reports, build output, caches, legacy scratch dirs — not source.
     ignores: [
       "node_modules/",
+      "dist/",
       "playwright-report/",
       "test-results/",
       "allure-report/",
@@ -13,37 +15,39 @@ module.exports = [
       "results/",
       ".npm-cache/",
       ".claude/",
+      "jsPractice/",   // legacy scratch files, not part of the framework
     ],
   },
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    files: ["**/*.js"],
+    // TypeScript sources. Tests run in Node, but page.evaluate() callbacks reference
+    // browser APIs (performance, document, ...). typescript-eslint disables no-undef
+    // (the compiler handles it), and @types/k6 types the k6 globals (__ENV, ...).
+    files: ["**/*.ts"],
     languageOptions: {
-      ecmaVersion: 2023,
-      sourceType: "commonjs",
-      // Tests run in Node, but page.evaluate() callbacks reference browser
-      // APIs (performance, document, window, ...) in the same files.
-      globals: {
-        ...globals.node,
-        ...globals.browser,
-      },
+      globals: { ...globals.node, ...globals.browser },
     },
     rules: {
       "no-console": "off",
+      // Allow intentionally-unused params/vars when prefixed with `_` (e.g. the
+      // positional vuContext the artillery engine passes but the flow ignores).
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
   {
-    // k6 load scripts: ES modules with k6-specific runtime globals.
-    files: ["k6/**/*.js"],
+    // This flat-config file is itself CommonJS JavaScript — require() is intentional.
+    files: ["**/*.js"],
     languageOptions: {
-      sourceType: "module",
-      globals: {
-        ...globals.node,
-        __ENV: "readonly",
-        __VU: "readonly",
-        __ITER: "readonly",
-        open: "readonly",
-      },
+      sourceType: "commonjs",
+      globals: { ...globals.node },
+    },
+    rules: {
+      "no-console": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
-];
+);

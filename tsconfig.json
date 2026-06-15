@@ -1,0 +1,43 @@
+{
+  // Type-checking config for the TypeScript test suite. Playwright transpiles .ts
+  // on the fly (no build step); this drives `tsc --noEmit` and editor IntelliSense.
+  "compilerOptions": {
+    "target": "ES2022",
+    // DOM libs type the browser globals used inside page.evaluate() callbacks
+    // (document, window, performance, PerformanceObserver, ...).
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    // node for fs/path/process; k6 for the load-test globals (__ENV, k6/* modules).
+    "types": ["node", "k6"]
+  },
+  "include": [
+    "config/**/*.ts",
+    "api/**/*.ts",
+    "mocks/**/*.ts",
+    "fixtures/**/*.ts",
+    "pages/**/*.ts",
+    "utils/**/*.ts",
+    "tests/**/*.ts",
+    "k6/**/*.ts",
+    "artillery/**/*.ts",
+    "playwright.config.ts",
+    "eslint.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "allure-report",
+    "allure-results",
+    "results",
+    "playwright-report",
+    "test-results"
+  ]
+}
