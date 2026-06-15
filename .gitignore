@@ -25,3 +25,4 @@ results/junit.xml
 
 # macOS
 .DS_Store
+dist/
