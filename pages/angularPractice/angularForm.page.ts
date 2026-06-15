@@ -28,18 +28,18 @@ export class AngularFormPage extends BasePage {
   readonly successAlert = this.page.locator("div.alert-success");
 
   async open(): Promise<void> {
-    await this.page.goto(this.baseURL);
+    await this.actions.goto(this.baseURL);
   }
 
   /** Fill every field and submit. */
   async submitForm({ name, email, password, gender, birthday }: FormDetails): Promise<void> {
-    await this.nameInput.fill(name);
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
-    await this.loveIceCreamCheckbox.click();
-    await this.genderSelect.selectOption(gender);
-    await this.employedRadio.click();
-    await this.birthdayInput.fill(birthday);
-    await this.submitButton.click();
+    await this.actions.fill(this.nameInput, name);
+    await this.actions.fill(this.emailInput, email);
+    await this.actions.fill(this.passwordInput, password);
+    await this.actions.click(this.loveIceCreamCheckbox);
+    await this.actions.selectOption(this.genderSelect, gender);
+    await this.actions.click(this.employedRadio);
+    await this.actions.fill(this.birthdayInput, birthday);
+    await this.actions.click(this.submitButton);
   }
 }

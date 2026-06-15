@@ -9,6 +9,6 @@ export class CartPage extends ClientPage {
 
   /** Proceed from the cart to the payment screen. */
   async checkout(): Promise<void> {
-    await this.checkoutButton.click();
+    await this.actions.click(this.checkoutButton);
   }
 }

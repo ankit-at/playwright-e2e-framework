@@ -15,19 +15,19 @@ export class ClientPage extends BasePage {
   readonly toastContainer = this.page.locator("#toast-container");
 
   async open(): Promise<void> {
-    await this.page.goto(this.baseURL);
+    await this.actions.goto(this.baseURL);
   }
 
   /** Click the cart button and wait for the cart route to load. */
   async goToCart(): Promise<void> {
     await Promise.all([
-      this.page.waitForURL(/cart/, { timeout: 15000 }),
-      this.cartButton.click(),
+      this.actions.waitForURL(/cart/, { timeout: 15000 }),
+      this.actions.click(this.cartButton),
     ]);
   }
 
   /** Navigate to the My Orders page via the header button. */
   async goToMyOrders(): Promise<void> {
-    await this.ordersButton.click();
+    await this.actions.click(this.ordersButton);
   }
 }

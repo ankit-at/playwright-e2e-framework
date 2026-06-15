@@ -15,8 +15,8 @@ export class LoginPage extends ClientPage {
    */
   async login(email: string, password: string): Promise<void> {
     await this.open();
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
-    await this.loginButton.click();
+    await this.actions.fill(this.emailInput, email);
+    await this.actions.fill(this.passwordInput, password);
+    await this.actions.click(this.loginButton);
   }
 }

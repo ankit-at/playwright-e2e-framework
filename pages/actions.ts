@@ -100,6 +100,11 @@ export class PageActions {
     await this.page.waitForResponse(url);
   }
 
+  /** Fixed pause (use sparingly — prefer waiting on a condition). */
+  async waitForTimeout(ms: number): Promise<void> {
+    await this.page.waitForTimeout(ms);
+  }
+
   // ── Text ────────────────────────────────────────────────────────────────────
 
   /** Return the trimmed `innerText` of a locator. */
@@ -110,6 +115,11 @@ export class PageActions {
   /** Return the current value of an input. */
   async getInputValue(locator: Locator): Promise<string> {
     return locator.inputValue();
+  }
+
+  /** Return the text of every element the locator matches. */
+  async getAllText(locator: Locator): Promise<string[]> {
+    return locator.allTextContents();
   }
 
   // ── Dialog ──────────────────────────────────────────────────────────────────
@@ -168,20 +178,20 @@ export class PageActions {
   // ── Table ───────────────────────────────────────────────────────────────────
 
   /**
-   * Scrape an HTML table into an array of objects keyed by header text.
+   * Scrape an HTML table into an array of objects keyed by header text. Assumes
+   * the first `<tr>` holds the headers and the rest hold data.
    * @param tableLocator the `<table>` (or equivalent) to read
-   * @param headerRowSelector locator for the header row within the table
-   * @param headerCellSelector locator for header cells within the header row
-   * @param dataRowSelector locator for data rows within the table
-   * @param cellSelector locator for cells within each data row
+   * @param rowSelector selector for rows within the table (default `tr`)
+   * @param headerCellSelector selector for header cells in the first row (default `th`)
+   * @param cellSelector selector for cells within each data row (default `td`)
    */
   async readTable(
     tableLocator: Locator,
+    rowSelector = "tr",
     headerCellSelector = "th",
-    dataRowSelector = "tr",
     cellSelector = "td",
   ): Promise<Record<string, string>[]> {
-    const rows = tableLocator.locator("tr");
+    const rows = tableLocator.locator(rowSelector);
 
     const headers: string[] = [];
     const headerCells = rows.first().locator(headerCellSelector);

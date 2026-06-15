@@ -19,7 +19,7 @@ export class DatePickerPage extends BasePage {
   readonly inputSegments = this.page.locator("input.react-date-picker__inputGroup__input");
 
   async open(): Promise<void> {
-    await this.page.goto(this.baseURL);
+    await this.actions.goto(this.baseURL);
   }
 
   /**
@@ -27,27 +27,27 @@ export class DatePickerPage extends BasePage {
    * @param month full month name, e.g. "December"
    */
   async pickDate(year: string | number, month: string, day: string | number): Promise<void> {
-    await this.inputGroup.click();
-    await this.navigationLabel.click();
-    await this.yearView.waitFor();
-    await this.navigationLabel.click();
-    await this.decadeView.waitFor();
-    await this.page
-      .locator("button.react-calendar__tile.react-calendar__decade-view__years__year", {
+    await this.actions.click(this.inputGroup);
+    await this.actions.click(this.navigationLabel);
+    await this.actions.waitFor(this.yearView);
+    await this.actions.click(this.navigationLabel);
+    await this.actions.waitFor(this.decadeView);
+    await this.actions.click(
+      this.page.locator("button.react-calendar__tile.react-calendar__decade-view__years__year", {
         hasText: String(year),
-      })
-      .click();
-    await this.yearView.waitFor();
-    await this.page
-      .locator("button.react-calendar__tile.react-calendar__year-view__months__month", {
+      }),
+    );
+    await this.actions.waitFor(this.yearView);
+    await this.actions.click(
+      this.page.locator("button.react-calendar__tile.react-calendar__year-view__months__month", {
         hasText: month,
-      })
-      .click();
-    await this.monthView.waitFor();
-    await this.page
-      .locator("button.react-calendar__tile.react-calendar__month-view__days__day", {
+      }),
+    );
+    await this.actions.waitFor(this.monthView);
+    await this.actions.click(
+      this.page.locator("button.react-calendar__tile.react-calendar__month-view__days__day", {
         hasText: String(day),
-      })
-      .click();
+      }),
+    );
   }
 }

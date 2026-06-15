@@ -38,7 +38,7 @@ export class PaymentPage extends ClientPage {
 
   /** Wait for the credit-card payment option to be active. */
   async waitForCreditCardForm(): Promise<void> {
-    await this.creditCardActive.waitFor();
+    await this.actions.waitFor(this.creditCardActive);
   }
 
   /** Fill the card form and apply the coupon. */
@@ -50,32 +50,32 @@ export class PaymentPage extends ClientPage {
     nameOnCard = "Ankit",
     coupon = "rahulshettyacademy",
   }: CardDetails = {}): Promise<void> {
-    await this.cardNumberInput.fill(number);
-    await this.monthSelect.selectOption(month);
-    await this.yearSelect.selectOption(year);
-    await this.cvvInput.fill(cvv);
-    await this.nameOnCardInput.fill(nameOnCard);
-    await this.couponInput.fill(coupon);
-    await this.applyCouponButton.click();
+    await this.actions.fill(this.cardNumberInput, number);
+    await this.actions.selectOption(this.monthSelect, month);
+    await this.actions.selectOption(this.yearSelect, year);
+    await this.actions.fill(this.cvvInput, cvv);
+    await this.actions.fill(this.nameOnCardInput, nameOnCard);
+    await this.actions.fill(this.couponInput, coupon);
+    await this.actions.click(this.applyCouponButton);
   }
 
   /** Type into the country autocomplete and pick the exact match. */
   async selectCountry(country: string): Promise<void> {
-    await this.countryInput.pressSequentially(country.toLowerCase());
-    await this.countryResults.waitFor();
+    await this.actions.type(this.countryInput, country.toLowerCase());
+    await this.actions.waitFor(this.countryResults);
     const options = this.countryResults.locator("button");
     const count = await options.count();
     for (let i = 0; i < count; i++) {
       const text = await options.nth(i).textContent();
       if (text?.trim() === country) {
-        await options.nth(i).click();
+        await this.actions.click(options.nth(i));
         return;
       }
     }
   }
 
   async placeOrder(): Promise<void> {
-    await this.placeOrderButton.click();
+    await this.actions.click(this.placeOrderButton);
   }
 
   /** The generated order id (leading "|" stripped). */

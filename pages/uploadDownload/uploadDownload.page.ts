@@ -12,19 +12,17 @@ export class UploadDownloadPage extends BasePage {
   readonly fileInput = this.page.locator("#fileinput");
 
   async open(): Promise<void> {
-    await this.page.goto(this.baseURL);
+    await this.actions.goto(this.baseURL);
   }
 
   /** Click Download and return the captured Download (listener armed first). */
   async download(): Promise<Download> {
-    const downloadPromise = this.page.waitForEvent("download");
-    await this.downloadButton.click();
-    return downloadPromise;
+    return this.actions.download(this.downloadButton);
   }
 
   /** Upload a file through the file input. */
   async upload(filePath: string): Promise<void> {
-    await this.fileInput.setInputFiles(filePath);
+    await this.actions.setInputFiles(this.fileInput, filePath);
   }
 
   /** The rendered table row containing `text`. */

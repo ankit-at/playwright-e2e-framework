@@ -13,7 +13,7 @@ export class OrdersPage extends ClientPage {
 
   /** Wait for the orders table to render its first row. */
   async waitForRows(): Promise<void> {
-    await this.orderIdCells.first().waitFor();
+    await this.actions.waitFor(this.orderIdCells.first());
   }
 
   /** Whether the given order id appears in the orders table. */

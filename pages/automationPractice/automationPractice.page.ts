@@ -5,7 +5,8 @@ import testData from "../../config/testData";
 /**
  * AutomationPracticePage — the RSA "AutomationPractice" kitchen-sink page
  * (radios, autocomplete, dropdown, checkboxes, child windows, tables, alerts,
- * mouse hover, iframe). Base URL comes from config/testData.
+ * mouse hover, iframe). Generic interactions (new-tab, table scrape, frame) are
+ * delegated to the central PageActions library via `this.actions`.
  */
 export class AutomationPracticePage extends BasePage {
   readonly baseURL = testData.automationPractice.baseURL;
@@ -27,7 +28,7 @@ export class AutomationPracticePage extends BasePage {
   readonly mouseHoverContent = this.page.locator(".mouse-hover-content");
 
   async open(): Promise<void> {
-    await this.page.goto(this.baseURL);
+    await this.actions.goto(this.baseURL);
   }
 
   /** Radio input whose id/value match `id` (e.g. "radio2"). */
@@ -42,51 +43,31 @@ export class AutomationPracticePage extends BasePage {
 
   /** Type into the autocomplete and pick the suggestion matching `optionText`. */
   async selectAutocomplete(typeText: string, optionText: RegExp | string): Promise<void> {
-    await this.autocompleteInput.pressSequentially(typeText);
-    await this.page.locator(".ui-menu-item-wrapper:visible", { hasText: optionText }).click();
+    await this.actions.type(this.autocompleteInput, typeText);
+    await this.actions.click(this.page.locator(".ui-menu-item-wrapper:visible", { hasText: optionText }));
   }
 
   /** Click a trigger that opens a new tab/window; return its title and close it. */
   async openInNewTabAndGetTitle(trigger: Locator): Promise<string> {
-    const [newPage] = await Promise.all([this.page.context().waitForEvent("page"), trigger.click()]);
-    await newPage.waitForLoadState();
-    const title = await newPage.title();
-    await newPage.close();
-    return title;
+    return this.actions.openInNewTabAndGetTitle(trigger);
   }
 
   /** Scrape the nth `#product` table into objects keyed by header text. */
   async readTable(tableNumber: number): Promise<Record<string, string>[]> {
-    const table = this.page.locator("#product").nth(tableNumber);
-    const rows = table.locator("tr");
-
-    const headers: string[] = [];
-    const headerCells = rows.first().locator("th");
-    for (let i = 0; i < (await headerCells.count()); i++) {
-      headers.push(((await headerCells.nth(i).textContent()) ?? "").trim());
-    }
-
-    const data: Record<string, string>[] = [];
-    for (let i = 1; i < (await rows.count()); i++) {
-      const cells = rows.nth(i).locator("td");
-      const rowObject: Record<string, string> = {};
-      for (let j = 0; j < (await cells.count()); j++) {
-        rowObject[headers[j]] = ((await cells.nth(j).textContent()) ?? "").trim();
-      }
-      data.push(rowObject);
-    }
-    return data;
+    return this.actions.readTable(this.page.locator("#product").nth(tableNumber));
   }
 
   /** Hover the mouse-hover control and click a revealed link by text. */
   async clickMouseHoverLink(linkText: string): Promise<void> {
-    await this.mouseHover.hover();
-    await this.mouseHoverContent.waitFor();
-    await this.mouseHoverContent.locator("a", { hasText: linkText }).click({ force: true });
+    await this.actions.hover(this.mouseHover);
+    await this.actions.waitFor(this.mouseHoverContent);
+    await this.actions.click(this.mouseHoverContent.locator("a", { hasText: linkText }), {
+      force: true,
+    });
   }
 
   /** The embedded courses iframe. */
   coursesFrame(): FrameLocator {
-    return this.page.frameLocator("#courses-iframe");
+    return this.actions.getFrame("#courses-iframe");
   }
 }

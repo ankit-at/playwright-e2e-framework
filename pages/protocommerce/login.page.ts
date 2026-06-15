@@ -19,7 +19,7 @@ export class LoginPage extends ProtoCommercePage {
   readonly documentsLink = this.page.locator("div.float-right a").first();
 
   async open(): Promise<void> {
-    await this.page.goto(this.baseURL);
+    await this.actions.goto(this.baseURL);
   }
 
   /** A role radio button by its value, e.g. "user" / "admin". */
@@ -30,8 +30,8 @@ export class LoginPage extends ProtoCommercePage {
   /** Fill credentials and submit. Navigation/landing assertions stay in the spec. */
   async login(username: string, password: string): Promise<void> {
     await this.open();
-    await this.usernameInput.fill(username);
-    await this.passwordInput.fill(password);
-    await this.signInButton.click();
+    await this.actions.fill(this.usernameInput, username);
+    await this.actions.fill(this.passwordInput, password);
+    await this.actions.click(this.signInButton);
   }
 }

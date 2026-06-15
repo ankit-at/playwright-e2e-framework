@@ -19,8 +19,8 @@ export class DashboardPage extends ClientPage {
 
   /** Open the first product's detail view and wait for it to render. */
   async viewFirstProduct(): Promise<void> {
-    await this.viewProductIcon.first().click();
-    await this.productDetail.waitFor();
+    await this.actions.click(this.viewProductIcon.first());
+    await this.actions.waitFor(this.productDetail);
   }
 
   /**
@@ -34,7 +34,7 @@ export class DashboardPage extends ClientPage {
    */
   async addToCartUntilCounted(expect: Expect): Promise<void> {
     for (let attempt = 1; attempt <= 5; attempt++) {
-      await this.addToCartButton.click();
+      await this.actions.click(this.addToCartButton);
       await expect(this.toastContainer).toContainText("Product Added To Cart", {
         timeout: 15000,
       });
@@ -45,7 +45,7 @@ export class DashboardPage extends ClientPage {
         if (attempt === 5) {
           throw new Error("Cart count never updated after 5 add-to-cart attempts");
         }
-        await this.page.waitForTimeout(500);
+        await this.actions.waitForTimeout(500);
       }
     }
   }

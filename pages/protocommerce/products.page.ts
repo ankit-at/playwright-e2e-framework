@@ -14,6 +14,6 @@ export class ProductsPage extends ProtoCommercePage {
 
   /** Every product name on the grid. */
   async productNames(): Promise<string[]> {
-    return this.productLinks.allTextContents();
+    return this.actions.getAllText(this.productLinks);
   }
 }
