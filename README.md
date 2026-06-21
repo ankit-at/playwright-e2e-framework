@@ -148,6 +148,15 @@ Console echo on success; email notification on failure (requires SMTP configurat
 GitHub Actions
 Workflow definitions live in .github/workflows/. Push to any branch or open a PR to trigger the CI run.
 
+Remote / Self-hosted runner
+Use a dedicated cloud VM (for example Hetzner 4 vCPU, 8GB RAM) to host Jenkins, a GitHub self-hosted runner, and Allure reports. This repo includes example orchestration in `docker-compose.yml` and an Nginx config in `infra/nginx/conf.d/allure.conf`.
+
+- Run `docker-compose up -d jenkins nginx github-runner` on the remote host.
+- Set the runner environment variables before startup: `GH_RUNNER_REPO`, `GH_RUNNER_TOKEN`, `GH_RUNNER_NAME`, and `GH_RUNNER_LABELS`.
+- Register the GitHub runner with labels like `self-hosted`, `linux`, `playwright`.
+- Use the new workflow at `.github/workflows/playwright-self-hosted.yml` for jobs that should execute on the remote runner.
+- Generate the static Allure site from `allure-results` and expose it at `https://qa.yourdomain.com/allure` through Nginx.
+
 Reporting
 Playwright HTML Report
 bashnpx playwright show-report

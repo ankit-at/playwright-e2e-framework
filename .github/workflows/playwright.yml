@@ -37,15 +37,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+      # - name: Install Playwright browsers
+      #   run: npx playwright install --with-deps chromium
+      
+      - name: Run Azure Login With a Service Principal Secret
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_SECRET }}
 
       - name: Run tests
-        run: npx playwright test
+        run: npx playwright test --config=playwright.service.config.ts --worker=5
         env:
           CI: true
           # Credentials — set in GitHub → Settings → Secrets and variables → Actions.
           # rahulshettyacademy account (client/events/angular/k6)
+          PLAYWRIGHT_SERVICE_URL: ${{ vars.PLAYWRIGHT_SERVICE_URL }}
           RSA_EMAIL: ${{ secrets.RSA_EMAIL }}
           RSA_PASSWORD: ${{ secrets.RSA_PASSWORD }}
           # ProtoCommerce loginpagePractise account

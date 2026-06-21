@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      JAVA_OPTS: -Djenkins.install.runSetupWizard=false
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./:/var/jenkins_home/workspace/playwright:delegated
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+      - ./allure-report:/usr/share/nginx/html/allure:ro
+    depends_on:
+      - jenkins
+    restart: unless-stopped
+
+  github-runner:
+    image: myoung34/github-runner:latest
+    environment:
+      REPO_URL: "${GH_RUNNER_REPO}"
+      RUNNER_TOKEN: "${GH_RUNNER_TOKEN}"
+      RUNNER_NAME: "${GH_RUNNER_NAME:-playwright-runner}"
+      RUNNER_LABELS: "${GH_RUNNER_LABELS:-self-hosted,linux,playwright}"
+      RUNNER_WORKDIR: /tmp/github-runner
+    volumes:
+      - runner_cache:/runner/_work
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
+  runner_cache:

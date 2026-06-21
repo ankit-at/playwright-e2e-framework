@@ -48,6 +48,7 @@ pipeline {
             }
             steps {
                 sh 'npm test'
+                sh 'npx allure generate allure-results --clean -o allure-report'
             }
         }
 
@@ -84,6 +85,11 @@ pipeline {
 
             archiveArtifacts(
                 artifacts        : 'test-results/**',
+                allowEmptyArchive: true
+            )
+
+            archiveArtifacts(
+                artifacts        : 'allure-report/**',
                 allowEmptyArchive: true
             )
         }
