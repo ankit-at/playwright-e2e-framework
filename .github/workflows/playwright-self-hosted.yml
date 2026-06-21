@@ -1,13 +1,11 @@
 name: Playwright Self-Hosted
 
+# Manual-trigger only: this workflow needs a self-hosted runner labelled
+# [self-hosted, linux, playwright]. None is currently registered, so push/PR/schedule
+# triggers were removed to stop jobs hanging in `queued` forever on every push.
+# Re-add those triggers once a runner is online.
 on:
-  push:
-    branches: [main, "feature/**"]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * *"
 
 env:
   NODE_OPTIONS: --disable-warning=DEP0040
