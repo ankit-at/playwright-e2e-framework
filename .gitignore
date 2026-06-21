@@ -13,7 +13,6 @@ node_modules/
 /allure-report/
 /allure-results/
 state.json
-auth.json
 results/junit.xml
 .npm-cache
 
