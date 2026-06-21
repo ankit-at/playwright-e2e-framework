@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "playwright-e2e-framework": {
+      "command": "npx",
+      "args": ["tsx", "mcp/server.ts"]
+    }
+  }
+}
