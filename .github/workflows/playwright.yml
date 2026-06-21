@@ -46,7 +46,7 @@ jobs:
           creds: ${{ secrets.AZURE_SECRET }}
 
       - name: Run tests
-        run: npx playwright test --config=playwright.service.config.ts --worker=5
+        run: npx playwright test --config=playwright.service.config.ts --workers=5
         env:
           CI: true
           # Credentials — set in GitHub → Settings → Secrets and variables → Actions.
