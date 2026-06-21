@@ -21,7 +21,11 @@ export default defineConfig(
     This configuration will replace any existing reporter settings from your base config.
     If you're already using other reporters, add them to this array.
     */
+    // "list" first so the real error/test output reaches the CI console — the
+    // html + service reporters write to files/the workspace, not stdout, which
+    // otherwise hides startup/connection failures behind a bare `exit 1`.
     reporter: [
+      ["list"],
       ["html", { open: "never" }],
       ["@azure/playwright/reporter"],
     ],
