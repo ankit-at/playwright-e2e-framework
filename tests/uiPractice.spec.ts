@@ -48,14 +48,16 @@ test.describe("Happy Flow (shared session)", () => {
     await checkbox3.check();
     await expect(checkbox3).toBeChecked();
 
-    // New window + new tab — each click opens a page; assert its title and close
-    const windowTitle = await practice.openInNewTabAndGetTitle(practice.openWindowButton);
-    console.log("New Window: " + windowTitle);
-    expect(windowTitle).toBeTruthy();
+    // New window + new tab — each click opens a page that navigates to a real URL.
+    // Assert on the URL (not the title): the destinations are third-party pages
+    // whose <title> we don't control, so verify the tab opened and navigated.
+    const windowUrl = await practice.openInNewTabAndGetUrl(practice.openWindowButton);
+    console.log("New Window: " + windowUrl);
+    expect(windowUrl).toMatch(/^https?:\/\//);
 
-    const tabTitle = await practice.openInNewTabAndGetTitle(practice.openTabButton);
-    console.log("New Tab: " + tabTitle);
-    expect(tabTitle).toBeTruthy();
+    const tabUrl = await practice.openInNewTabAndGetUrl(practice.openTabButton);
+    console.log("New Tab: " + tabUrl);
+    expect(tabUrl).toMatch(/^https?:\/\//);
 
     // Table scraping
     console.table(await practice.readTable(0));

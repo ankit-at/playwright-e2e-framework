@@ -52,6 +52,11 @@ export class AutomationPracticePage extends BasePage {
     return this.actions.openInNewTabAndGetTitle(trigger);
   }
 
+  /** Click a trigger that opens a new tab/window; return its final URL and close it. */
+  async openInNewTabAndGetUrl(trigger: Locator): Promise<string> {
+    return this.actions.openInNewTabAndGetUrl(trigger);
+  }
+
   /** Scrape the nth `#product` table into objects keyed by header text. */
   async readTable(tableNumber: number): Promise<Record<string, string>[]> {
     return this.actions.readTable(this.page.locator("#product").nth(tableNumber));
