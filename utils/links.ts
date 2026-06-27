@@ -23,12 +23,15 @@ export async function findBrokenLinks(
   const emptyLinks: EmptyLink[] = [];
 
   for (const link of links) {
-    // Empty or invalid links
+    // Empty or invalid links. The scheme check is case-insensitive and tolerates
+    // leading whitespace, and also covers the other non-navigational schemes a
+    // browser would treat specially — startsWith("javascript:") alone would let
+    // "JavaScript:" or " javascript:" slip through (CodeQL js/incomplete-url-scheme-check).
     if (
       !link.href ||
       link.href === "#" ||
       link.href.trim() === "" ||
-      link.href.startsWith("javascript:")
+      /^\s*(javascript|vbscript|data):/i.test(link.href)
     ) {
       emptyLinks.push({
         text: link.text,
