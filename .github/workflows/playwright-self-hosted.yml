@@ -1,9 +1,16 @@
 name: Playwright Self-Hosted
 
-# Manual-trigger only: this workflow needs a self-hosted runner labelled
-# [self-hosted, linux, playwright]. None is currently registered, so push/PR/schedule
-# triggers were removed to stop jobs hanging in `queued` forever on every push.
-# Re-add those triggers once a runner is online.
+# Manual-trigger only (workflow_dispatch). This runs on a SELF-HOSTED runner and
+# the repo is PUBLIC, so the workflow is deliberately hardened (see issue #2):
+#   - No automatic / untrusted triggers — no push, pull_request, pull_request_target,
+#     issue_comment, workflow_run, schedule or repository_dispatch. workflow_dispatch
+#     can only be started by a user with write access, so forks/PRs cannot run it.
+#   - Both jobs are guarded to the canonical repo (`if: github.repository == ...`), so
+#     the workflow never executes in a fork — even one that registers its own runner.
+#   - permissions: contents: read (least-privilege GITHUB_TOKEN).
+#   - Secrets are scoped to the test step only (npm ci / browser install never see them).
+# Needs a runner labelled [self-hosted, linux, playwright]; none is registered yet.
+# https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
 on:
   workflow_dispatch:
 
@@ -16,6 +23,8 @@ permissions:
 jobs:
   test:
     runs-on: [self-hosted, linux, playwright]
+    # Never run on a self-hosted runner from a fork of this public repo.
+    if: github.repository == 'ankit-at/playwright-e2e-framework'
     timeout-minutes: 60
 
     steps:
@@ -60,7 +69,8 @@ jobs:
 
   load-tests:
     runs-on: [self-hosted, linux, playwright]
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # Never run on a self-hosted runner from a fork of this public repo.
+    if: github.repository == 'ankit-at/playwright-e2e-framework'
 
     steps:
       - uses: actions/checkout@v5
