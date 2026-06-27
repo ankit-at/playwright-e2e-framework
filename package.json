@@ -14,7 +14,8 @@
     "load:browser": "artillery run artillery/login-browser.yml",
     "load:k6": "npm run build:k6 && ./tools/k6 run dist/k6/login-api.js",
     "load:k6-browser": "npm run build:k6 && K6_BROWSER_HEADLESS=true K6_BROWSER_EXECUTABLE_PATH=\"$HOME/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing\" ./tools/k6 run dist/k6/login-browser.js",
-    "report:artillery": "tsx artillery/make-report.ts"
+    "report:artillery": "tsx artillery/make-report.ts",
+    "postinstall": "patch-package"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +36,7 @@
     "esbuild": "^0.28.1",
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
+    "patch-package": "^8.0.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.0"
@@ -43,6 +45,7 @@
     "exceljs": "^4.4.0"
   },
   "overrides": {
-    "uuid": "^11.1.1"
+    "uuid": "^11.1.1",
+    "js-yaml": "^4.2.0"
   }
 }
