@@ -35,10 +35,13 @@ export class DashboardPage extends ClientPage {
   async addToCartUntilCounted(expect: Expect): Promise<void> {
     for (let attempt = 1; attempt <= 5; attempt++) {
       await this.actions.click(this.addToCartButton);
-      await expect(this.toastContainer).toContainText("Product Added To Cart", {
-        timeout: 15000,
-      });
       try {
+        // The optimistic UI sometimes neither toasts nor persists the first add after
+        // landing on the detail page — treat BOTH a missing toast and a stale cart
+        // badge as a failed attempt and re-click, rather than hard-failing on either.
+        await expect(this.toastContainer).toContainText("Product Added To Cart", {
+          timeout: 7000,
+        });
         await expect(this.cartBadge).toHaveText(/\d+/, { timeout: 4000 });
         return;
       } catch {

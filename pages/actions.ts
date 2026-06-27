@@ -142,33 +142,51 @@ export class PageActions {
   // ── Tab / Window ────────────────────────────────────────────────────────────
 
   /**
-   * Click `trigger`, wait for the new tab/window it opens, then return its
-   * title and close the tab.
+   * Click `trigger` and return the new tab/window once it has navigated off
+   * about:blank. A tab opens on about:blank and navigates a moment later, so
+   * callers must not read its state until that lands (esp. on remote browsers).
    */
-  async openInNewTabAndGetTitle(trigger: Locator): Promise<string> {
+  private async openInNewTab(trigger: Locator): Promise<Page> {
     const [newPage] = await Promise.all([
       this.page.context().waitForEvent("page"),
       trigger.click(),
     ]);
-    await newPage.waitForLoadState();
+    await newPage.waitForLoadState("domcontentloaded").catch(() => {});
+    await newPage
+      .waitForURL((url) => url.href !== "about:blank" && url.href !== "", { timeout: 15000 })
+      .catch(() => {});
+    return newPage;
+  }
+
+  /** Click `trigger`, return the new tab/window's title (may be empty), and close it. */
+  async openInNewTabAndGetTitle(trigger: Locator): Promise<string> {
+    const newPage = await this.openInNewTab(trigger);
     const title = await newPage.title();
     await newPage.close();
     return title;
   }
 
   /**
-   * Click `trigger`, wait for the new tab/window it opens, extract a value
-   * from it using `extract`, then close the tab and bring the opener to front.
+   * Click `trigger`, return the new tab/window's final URL, and close it. Prefer
+   * this over the title when the opened page is a third party whose title isn't
+   * under our control — the URL reliably proves the tab opened and navigated.
+   */
+  async openInNewTabAndGetUrl(trigger: Locator): Promise<string> {
+    const newPage = await this.openInNewTab(trigger);
+    const url = newPage.url();
+    await newPage.close();
+    return url;
+  }
+
+  /**
+   * Click `trigger`, extract a value from the new tab/window with `extract`,
+   * then close the tab and bring the opener to front.
    */
   async openInNewTabAndExtract(
     trigger: Locator,
     extract: (newPage: Page) => Promise<string>,
   ): Promise<string> {
-    const [newPage] = await Promise.all([
-      this.page.context().waitForEvent("page"),
-      trigger.click(),
-    ]);
-    await newPage.waitForLoadState();
+    const newPage = await this.openInNewTab(trigger);
     const value = await extract(newPage);
     await newPage.close();
     await this.page.bringToFront();
