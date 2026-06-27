@@ -1,0 +1,13 @@
+diff --git a/node_modules/artillery/lib/util.js b/node_modules/artillery/lib/util.js
+index e2373b7..9aed28c 100644
+--- a/node_modules/artillery/lib/util.js
++++ b/node_modules/artillery/lib/util.js
+@@ -38,7 +38,7 @@ async function readScript(scriptPath) {
+ }
+ 
+ async function parseScript(data) {
+-  return YAML.safeLoad(data);
++  return YAML.load(data);
+ }
+ 
+ async function addOverrides(script, flags) {
