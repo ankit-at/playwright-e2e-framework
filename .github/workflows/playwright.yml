@@ -70,7 +70,7 @@ jobs:
       # To debug a failure with traces, run locally (npx playwright show-trace) or make
       # the repo private and re-enable a failure-artifact upload.
       - name: Upload HTML report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: success()
         with:
           name: playwright-report
