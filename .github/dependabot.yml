@@ -20,3 +20,7 @@ updates:
     schedule:
       interval: "weekly"
     labels: ["dependencies", "github-actions"]
+    groups:
+      # Batch every GitHub Actions bump into ONE PR instead of one-per-action.
+      github-actions:
+        patterns: ["*"]

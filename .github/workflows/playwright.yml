@@ -21,7 +21,35 @@ permissions:
   contents: read
 
 jobs:
+  # Secret-free checks — run on every push and PR (including Dependabot and fork
+  # PRs, which GitHub withholds secrets from). Gives those PRs a meaningful green
+  # signal even though the Azure-backed `test` job below can't run for them.
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Verify all tests resolve
+        run: npx playwright test --list
+
   test:
+    # Skip on Dependabot / fork PRs: they have no access to AZURE_SECRET or the
+    # app secrets, so the Azure-backed run can only fail. `validate` covers them.
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
