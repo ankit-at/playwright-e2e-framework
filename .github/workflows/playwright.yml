@@ -23,10 +23,12 @@ permissions:
 jobs:
   # Secret-free checks — run on every push and PR (including Dependabot and fork
   # PRs, which GitHub withholds secrets from). Gives those PRs a meaningful green
-  # signal even though the Azure-backed `test` job below can't run for them.
+  # signal even though the secret-backed `test` job below can't run for them.
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Fork/Dependabot PRs run only this secret-free job; the `test` job below is
+    # skipped for them since it needs the app login secrets.
     steps:
       - uses: actions/checkout@v7
       - name: Setup Node
@@ -44,8 +46,9 @@ jobs:
         run: npx playwright test --list
 
   test:
-    # Skip on Dependabot / fork PRs: they have no access to AZURE_SECRET or the
-    # app secrets, so the Azure-backed run can only fail. `validate` covers them.
+    # Skip on Dependabot / fork PRs: they have no access to the app login secrets
+    # (RSA/PROTO/EventHub) or AZURE_SECRET, so the run can only fail. `validate`
+    # covers them.
     if: >-
       github.actor != 'dependabot[bot]' &&
       (github.event_name != 'pull_request' ||
@@ -65,21 +68,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Install Playwright browsers
-      #   run: npx playwright install --with-deps chromium
-      
-      - name: Run Azure Login With a Service Principal Secret
-        uses: azure/login@v3
-        with:
-          creds: ${{ secrets.AZURE_SECRET }}
+      # ── Local-browser run (active) ─────────────────────────────────────────
+      # Runs the suite on GitHub's own runners with a locally-installed Chromium.
+      # Self-contained: needs only the app-login secrets below, no Azure account.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Run tests
-        run: npx playwright test --config=playwright.service.config.ts --workers=5
+        run: npx playwright test
         env:
           CI: true
           # Credentials — set in GitHub → Settings → Secrets and variables → Actions.
           # rahulshettyacademy account (client/events/angular/k6)
-          PLAYWRIGHT_SERVICE_URL: ${{ vars.PLAYWRIGHT_SERVICE_URL }}
           RSA_EMAIL: ${{ secrets.RSA_EMAIL }}
           RSA_PASSWORD: ${{ secrets.RSA_PASSWORD }}
           # ProtoCommerce loginpagePractise account
@@ -90,6 +90,35 @@ jobs:
           YAHOO_PASSWORD: ${{ secrets.YAHOO_PASSWORD }}
           GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+
+      # ── Azure Playwright Testing run (disabled — kept for reference) ────────
+      # The suite is fully wired to run on Microsoft Playwright Testing (Azure
+      # Playwright Workspaces): a cloud-hosted browser grid via
+      # playwright.service.config.ts. It is disabled here only because the Azure
+      # service principal currently has no active subscription (login returns
+      # "No subscriptions found"). To run on Azure instead of local browsers:
+      #   1. Comment out the "Install Playwright browsers" + "Run tests" steps above.
+      #   2. Add AZURE_SECRET (SP creds JSON) and the PLAYWRIGHT_SERVICE_URL var.
+      #   3. Uncomment the two steps below.
+      #
+      # - name: Run Azure Login With a Service Principal Secret
+      #   uses: azure/login@v3
+      #   with:
+      #     creds: ${{ secrets.AZURE_SECRET }}
+      #
+      # - name: Run tests on Azure Playwright Testing
+      #   run: npx playwright test --config=playwright.service.config.ts --workers=5
+      #   env:
+      #     CI: true
+      #     PLAYWRIGHT_SERVICE_URL: ${{ vars.PLAYWRIGHT_SERVICE_URL }}
+      #     RSA_EMAIL: ${{ secrets.RSA_EMAIL }}
+      #     RSA_PASSWORD: ${{ secrets.RSA_PASSWORD }}
+      #     PROTO_USER: ${{ secrets.PROTO_USER }}
+      #     PROTO_PASS: ${{ secrets.PROTO_PASS }}
+      #     YAHOO_EMAIL: ${{ secrets.YAHOO_EMAIL }}
+      #     YAHOO_PASSWORD: ${{ secrets.YAHOO_PASSWORD }}
+      #     GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
+      #     GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
 
       # Publish the HTML report only on SUCCESS. This repo is public, so we must not
       # upload failure artifacts: Playwright traces capture login request bodies and
