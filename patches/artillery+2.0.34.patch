@@ -1,0 +1,13 @@
+diff --git a/node_modules/artillery/dist/lib/util.js b/node_modules/artillery/dist/lib/util.js
+index d78dd7c..521ad2a 100644
+--- a/node_modules/artillery/dist/lib/util.js
++++ b/node_modules/artillery/dist/lib/util.js
+@@ -21,7 +21,7 @@ async function parseScript(data) {
+     // js-yaml v3 types say string | object | undefined; scripts are
+     // objects. Structural validation happens later in the pipeline
+     // (validate-script).
+-    return YAML.safeLoad(data);
++    return YAML.load(data);
+ }
+ async function addOverrides(script, flags) {
+     if (!flags.overrides) {
