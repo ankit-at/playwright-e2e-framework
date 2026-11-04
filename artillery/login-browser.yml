@@ -7,7 +7,7 @@ config:
     playwright:
       launchOptions:
         headless: true
-  processor: "./flows.js"
+  processor: "./flows.ts"
   # Browser VUs are heavy — keep arrival low. Scale up gradually.
   phases:
     - duration: 15

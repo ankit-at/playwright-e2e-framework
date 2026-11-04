@@ -65,7 +65,7 @@ pipeline {
                 RSA_PASSWORD = credentials('RSA_PASSWORD')
             }
             steps {
-                sh 'npx playwright test tests/performance.spec.js --reporter=line'
+                sh 'npx playwright test tests/performance.spec.ts --reporter=line'
             }
         }
     }
