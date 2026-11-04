@@ -119,9 +119,14 @@ playwright-e2e-framework/
 │   └── perf.ts                       # percentile / summary stats for the perf benchmark
 ├── test-data/                        # raw data: .properties files + JSON payloads
 ├── tests/                            # Playwright specs (UI, API, performance) — *.spec.ts
-├── artillery/  k6/  tools/           # load testing (Artillery + k6 bundled via esbuild)
+├── artillery/                        # Artillery browser load test (YAML + TS processor + report script)
+├── k6/                               # k6 API + browser load tests (TS, bundled via esbuild)
+├── mcp/server.ts                     # MCP server exposing list/run/typecheck/lint tools (.mcp.json)
+├── patches/                          # patch-package fixes applied on `npm install` (postinstall)
 ├── infra/  docker-compose.yml        # self-hosted Jenkins / GH runner / Nginx + Allure
 ├── .github/workflows/                # GitHub Actions CI (hosted + self-hosted)
+├── .env.example                      # credential template — copy to .env (gitignored)
+├── auth.json                         # empty storageState placeholder used by a few specs
 ├── playwright.config.ts              # Playwright config (single chromium project, testIdAttribute)
 ├── playwright.service.config.ts      # optional Azure Playwright Workspaces (cloud parallel run)
 ├── tsconfig.json                     # strict type-checking config (tsc --noEmit)
@@ -130,14 +135,16 @@ playwright-e2e-framework/
 └── package.json
 ```
 
+**Not committed (gitignored, created locally):** `tools/` (holds the k6 binary you download — see [Prerequisites](#prerequisites)), `dist/` (esbuild k6 bundles; Artillery also writes `artillery/dist/` when it bundles `flows.ts`), `.env`, and the generated `results/`, `test-results/`, `playwright-report/`, `allure-results/` and `allure-report/` directories.
+
 ---
 
 ## Prerequisites
 
 - **Node.js v24+** (the CI runs on Node 24)
 - **npm v10+**
-- For **k6** load tests: the `k6` binary at `./tools/k6`
-- For **Jenkins** CI: Jenkins with the NodeJS plugin (tool named **`Node24`**) and SMTP for failure alerts
+- For **k6** load tests: a `k6` binary at `./tools/k6`. It is **not committed** (`tools/` is gitignored) — download the build for your OS from the [k6 releases](https://github.com/grafana/k6/releases), then `mkdir -p tools`, place the `k6` executable there and `chmod +x tools/k6`
+- For **Jenkins** CI: Jenkins with the NodeJS plugin (tool named **`Node24`**); SMTP is only needed if you enable the (currently commented-out) failure email
 
 ---
 
@@ -193,7 +200,8 @@ npm run lint
 npm run perf
 
 # Artillery — real Chromium per virtual user
-npm run load:browser
+mkdir -p results                                           # Artillery won't create the output dir
+npm run load:browser -- --output results/artillery-out.json
 npm run report:artillery results/artillery-out.json results/report.html   # build the HTML report
 
 # k6 — bundled from TypeScript via esbuild, then executed
@@ -213,7 +221,8 @@ npm run load:k6-browser   # browser load test (Chromium from your Playwright cac
 
 `.github/workflows/playwright.yml` runs on **push** (`main`, `feature/**`), **pull requests**, **nightly** (02:00 UTC), and **manual dispatch**.
 
-- The main **`test`** job runs the suite on the **[Azure Playwright Workspaces](https://aka.ms/pww) cloud browser grid** (`--config=playwright.service.config.ts --workers=5`): it authenticates via `azure/login` (`AZURE_SECRET`) and connects through `PLAYWRIGHT_SERVICE_URL`, so no local browser install is needed in CI.
+- A secret-free **`validate`** job runs on every push and PR (including Dependabot / fork PRs): `npm ci`, `npm run typecheck`, `npm run lint` and `npx playwright test --list`.
+- The main **`test`** job runs the full suite on GitHub's runners with a locally installed Chromium, using the app-login secrets. It is skipped for Dependabot and fork PRs, which don't get secrets. The [Azure Playwright Workspaces](https://aka.ms/pww) steps are kept in the workflow but **commented out** (the service principal has no active subscription). See the comments in `playwright.yml` for how to switch back.
 - Node 24, least-privilege `GITHUB_TOKEN` (`contents: read`), `NODE_OPTIONS=--disable-warning=DEP0040`.
 - The HTML report is uploaded **only on success** — this repo is public, and traces/screenshots can capture credentials, so failure artifacts are deliberately not published (reproduce failures locally instead).
 - A separate **`load-tests`** job runs the performance benchmark (with its own local Chromium) on **schedule / manual only**, so it never blocks a PR.
@@ -231,7 +240,7 @@ npm run load:k6-browser   # browser load test (Chromium from your Playwright cac
 | Test | Always | Full Playwright suite |
 | Performance | Nightly / Manual | `performance.spec.ts` only |
 
-Runs nightly at 2 AM (cron) and on demand. Post-build: JUnit XML published, HTML report archived per build, `test-results/**` saved, email on failure.
+Runs nightly at 2 AM (cron) and on demand. Post-build: JUnit XML published, HTML report archived per build, `test-results/**` and `allure-report/**` saved. The failure email is stubbed out (commented `mail()` step) until SMTP is configured.
 
 ### Self-hosted runner (optional)
 
@@ -239,7 +248,7 @@ Runs nightly at 2 AM (cron) and on demand. Post-build: JUnit XML published, HTML
 
 ### Azure Playwright Workspaces
 
-`playwright.service.config.ts` wraps the base config to run tests on Microsoft's hosted browser grid for massive parallelism — this is what the CI `test` job above uses. To run against it locally, authenticate to Azure and pass the service config:
+`playwright.service.config.ts` wraps the base config to run tests on Microsoft's hosted browser grid for massive parallelism. CI doesn't currently use it (see the disabled steps above). To run against it locally, authenticate to Azure and pass the service config:
 
 ```bash
 npx playwright test --config=playwright.service.config.ts
