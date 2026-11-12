@@ -1,0 +1,30 @@
+# Artillery browser load test — Darwinbox careers portal (QA), real Chromium per VU.
+# Run from project root:
+#   mkdir -p results
+#   npx artillery run artillery/darwinbox-careers.yml --output results/darwinbox-artillery.json
+#   npx tsx artillery/make-report.ts results/darwinbox-artillery.json results/darwinbox-artillery.html
+#
+# The portal serves a crawler stub to "HeadlessChrome" user agents, so a desktop
+# Chrome UA is set. Note: the candidate API throttles a single client at roughly
+# 30–50 requests/minute (503s); keep arrivals low from one machine.
+config:
+  target: https://ta2.qa.darwinbox.io
+  engines:
+    playwright:
+      launchOptions:
+        headless: true
+      contextOptions:
+        userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"
+        viewport: { width: 1440, height: 900 }
+      defaultNavigationTimeout: 60
+      defaultTimeout: 60
+  processor: "./darwinbox-flows.ts"
+  phases:
+    - duration: 30
+      arrivalCount: 3
+      name: "3 candidates over 30s"
+
+scenarios:
+  - name: "Careers journey (real browser)"
+    engine: playwright
+    testFunction: "careersJourney"
