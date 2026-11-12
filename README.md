@@ -201,6 +201,23 @@ npm run load:k6            # API load test
 npm run load:k6-browser   # browser load test (Chromium from your Playwright cache)
 ```
 
+### Darwinbox careers portal (QA)
+
+Load tests for `https://ta2.qa.darwinbox.io/ms/candidatev2/main/careers/allJobs`, built from the API calls and UI actions captured on the live page (page load → search → load more → sort → department filter → job details):
+
+```bash
+npm run load:dbx-api -- -e PROFILE=smoke                       # k6 API journey, 1 user
+npm run load:dbx-api -- -e PROFILE=load -e VUS=5 -e DURATION=2m # k6 API journey, ramped load
+npm run load:dbx-browser -- -e VUS=3 -e ITERATIONS=2           # k6 browser: page load + UI action timings
+npm run load:dbx-artillery -- --output results/darwinbox-artillery.json   # Artillery + Playwright
+```
+
+- **Auth** is optional: pass `-e DBX_TOKEN=<bearer>` to k6. Never commit a token.
+- **User agent:** the portal serves a crawler/link-preview stub to `HeadlessChrome`, so the browser tests set a desktop Chrome UA.
+- **Throttling:** the candidate API (`/ms/candidateapi/*`) answers a single client with 503/502 after roughly 30–50 requests/minute. Load from one machine above that measures the throttle, not capacity; use distributed load or an allow-listed client for capacity tests.
+- **Login** is behind a Cloudflare Turnstile CAPTCHA, so sign-in, save-job and apply flows are out of scope.
+- `load:dbx-browser` needs `K6_BROWSER_EXECUTABLE_PATH` if k6 can't find Chromium on its own.
+
 > **k6 + TypeScript:** k6 can't run `.ts` directly, so `build:k6` bundles `k6/*.ts` to `dist/k6/*.js` (esbuild, k6 modules externalised) before running. The `load:k6*` scripts do this automatically.
 >
 > **Note:** `load:k6-browser` sets `K6_BROWSER_EXECUTABLE_PATH` to the Playwright-managed Chromium. Update that path if your Playwright cache directory differs from the default macOS location.
